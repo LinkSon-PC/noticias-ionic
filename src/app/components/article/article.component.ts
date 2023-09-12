@@ -63,9 +63,10 @@ export class ArticleComponent implements OnInit {
       handler: () => this.onShareArticle()
     }
 
-    if (this.platform.is('capacitor')) {
+    /* if (this.platform.is('capacitor')) {
       normalBts.unshift(shareBtn);
-    }
+    } */
+    normalBts.unshift(shareBtn);
 
 
     const actionSheet = await this.actionSheetCtrl.create({
@@ -79,16 +80,34 @@ export class ArticleComponent implements OnInit {
   onShareArticle() {
     const { title, source, url } = this.article
 
-    this.socialSharing.share(
-      title,
-      source.name,
-      undefined,
-      url,
-    )
+    
+
+    if (this.platform.is('cordova')) {
+      this.socialSharing.share(
+        title,
+        source.name,
+        '',
+        url,
+      )
+    }else{
+      if (navigator.share) {
+        navigator.share({
+          title: this.article.title,
+          text: this.article.description,
+          url: this.article.url,
+        })
+          .then(() => console.log('Successful share'))
+          .catch((error) => console.log('Error sharing', error));
+      }
+      else{
+        console.log('No se puede compartir porque no soporta')
+      }
+    }
   }
 
   onToogleFavorite() {
     this.storageService.saveOrRemove(this.article);
     console.log('favorite article');
   }
+
 }
